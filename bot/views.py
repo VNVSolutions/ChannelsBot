@@ -49,41 +49,41 @@ def start(message):
 
 def create_reply_markup():
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    markup.add(KeyboardButton('Головні канали'))
-    markup.add(KeyboardButton('Дочірні канали'))
-    markup.add(KeyboardButton('Ключові слова'))
+    markup.add(KeyboardButton('Главные каналы'))
+    markup.add(KeyboardButton('Дочерние каналы'))
+    markup.add(KeyboardButton('Ключевые слова'))
     print("Кнопки меню markup")
     print(markup)
     return markup
 
 
-@bot.message_handler(func=lambda message: message.text == 'Головні канали')
+@bot.message_handler(func=lambda message: message.text == 'Главные каналы')
 def send_main_channels(message):
     chat_id = message.chat.id
     main_channels = MainChannel.objects.all()
-    response = "Головні канали:\n\n"
+    response = "Главные каналы:\n\n"
     for channel in main_channels:
-        response += f"{channel.name} (ID: {channel.channel_id})\n\n"
+        response += f"{channel.name}\n ID: {channel.channel_id}\n\n"
     bot.send_message(chat_id, response)
 
 
-@bot.message_handler(func=lambda message: message.text == 'Дочірні канали')
+@bot.message_handler(func=lambda message: message.text == 'Дочерние каналы')
 def send_sub_channels(message):
     chat_id = message.chat.id
     sub_channels = SubChannel.objects.all()
-    response = "Дочірні канали:\n\n"
+    response = "Дочерние каналы:\n\n"
     for channel in sub_channels:
-        response += f"Дочірній канал: {channel.name}\n ID: {channel.channel_id}\n Головний канал: {channel.main_channel.name}\n\n"
+        response += f"Дочерний канал: {channel.name}\n ID: {channel.channel_id}\n Главный канал: {channel.main_channel.name}\n\n"
     bot.send_message(chat_id, response)
 
 
-@bot.message_handler(func=lambda message: message.text == 'Ключові слова')
+@bot.message_handler(func=lambda message: message.text == 'Ключевые слова')
 def send_keyword_replacements(message):
     chat_id = message.chat.id
     keyword_replacements = KeywordReplacementItem.objects.all()
-    response = "Ключові слова:\n\n"
+    response = "Ключевые слова:\n\n"
     for item in keyword_replacements:
-        response += f"Дочірній канал: {item.keyword_replacement.sub_channel.name}\n {item.keyword} -> {item.replacement}\n\n"
+        response += f"Дочерний канал: {item.keyword_replacement.sub_channel.name}\n {item.keyword} -> {item.replacement}\n\n"
     bot.send_message(chat_id, response)
 
 
