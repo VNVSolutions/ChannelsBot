@@ -1,0 +1,83 @@
+version: '3'
+
+services:
+  web:
+    build:
+      dockerfile: ./web/docker/Dockerfile
+      context: ./
+    environment:
+     - PYTHONUNBUFFERED=TRUE
+    volumes:
+      - .:/ChannelsBot
+    ports:
+      - "8004:8000"
+    networks:
+      - app
+    depends_on:
+      - db
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+
+  db:
+    image: mysql:8.0.33
+    ports:
+      - '3124:3306'
+    environment:
+      MYSQL_DATABASE: 'ChannelsBot'
+      MYSQL_ROOT: 'root'
+      MYSQL_ROOT_PASSWORD: 'root'
+    volumes:
+      - ./web/mysql/data:/var/lib/mysql
+      - ./web/mysql/dump:/dump
+    networks:
+      - app
+
+  redis:
+    image: "redis:alpine"
+    networks:
+      - app
+
+  celery:
+    build:
+      context: ./
+      dockerfile: ./web/docker/Dockerfile
+    command: celery -A ChannelsBot worker --loglevel=info
+    volumes:
+      - .:/ChannelsBot
+    networks:
+      - app
+    depends_on:
+      - redis
+      - web
+
+  celery-beat:
+    build:
+      context: ./
+      dockerfile: ./web/docker/Dockerfile
+    command: celery -A ChannelsBot beat -l info --scheduler django_celery_beat.schedulers.DatabaseScheduler
+    volumes:
+      - .:/ChannelsBot
+    networks:
+      - app
+    depends_on:
+      - redis
+      - celery
+      - web
+
+  nginx:
+    build: ./web/nginx
+    volumes:
+      - .:/ChannelsBot
+    ports:
+      - 1225:80
+    depends_on:
+      - web
+    networks:
+      - app
+
+networks:
+  app:
+    driver: bridge
